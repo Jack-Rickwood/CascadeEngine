@@ -1,0 +1,175 @@
+#version 450
+
+#extension GL_EXT_shader_explicit_arithmetic_types_int8: require
+#extension GL_EXT_shader_8bit_storage: require
+#extension GL_EXT_scalar_block_layout: require
+
+
+
+/* ===== Shader Input ===== */
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+layout (scalar, binding = 0, set = 0) buffer stateBuffer
+{
+    uint8_t state[];
+};
+
+layout (binding = 0, set = 1) uniform SceneInfoUBO {
+    ivec2 screen_dimensions;
+    ivec3 world_dimensions;
+
+    vec3 camera_position;
+    vec3 camera_direction;
+    vec3 old_camera_position;
+    vec3 old_camera_direction;
+
+    int chunk_size;
+    int local_size;
+} scene_info;
+
+layout (scalar, binding = 0, set = 2) buffer subchunkStateBuffer
+{
+    uint8_t subchunk_state[];
+};
+
+layout (push_constant) uniform Push {
+    ivec3 subchunk_offset;
+    ivec3 subchunk_location;
+} push;
+
+
+
+/* ===== Physics Implementation ===== */
+uint8_t getVoxel(ivec3 loc) {
+    int world_size = scene_info.world_dimensions.y;
+    if (loc.x >= 0 && loc.x < world_size &&
+        loc.y >= 0 && loc.y < world_size &&
+        loc.z >= 0 && loc.z < world_size)
+    {
+        int index = loc.z * world_size * world_size + loc.y * world_size + loc.x;
+        return state[index];
+    } else {
+        return uint8_t(255);
+    }
+}
+
+void setVoxel(ivec3 loc, uint8_t value) {
+    int world_size = scene_info.world_dimensions.y;
+    if (loc.x >= 0 && loc.x < world_size &&
+        loc.y >= 0 && loc.y < world_size &&
+        loc.z >= 0 && loc.z < world_size)
+    {
+        int index = loc.z * world_size * world_size + loc.y * world_size + loc.x;
+        state[index] = value;
+    }
+}
+
+bool evolveVoxel(ivec3 base_offset, ivec3 subchunk_offset, ivec3 voxel_offset) {
+    ivec3 loc = base_offset + subchunk_offset + voxel_offset;
+    uint8_t voxel_curr = getVoxel(loc);
+    switch (int(voxel_curr)) {
+    case 0: {
+        return false;
+    }
+    case 1: {
+        const ivec3 moves[9] = ivec3[](
+            ivec3(0, -1, 0),
+            ivec3(1, -1, 0),
+            ivec3(-1, -1, 0),
+            ivec3(0, -1, 1),
+            ivec3(0, -1, -1),
+            ivec3(-1, -1, -1),
+            ivec3(1, -1, 1),
+            ivec3(1, -1, -1),
+            ivec3(-1, -1, 1)
+        );
+        for (int i = 0; i < 9; i++) {
+            if (int(getVoxel(loc + moves[i])) == 0) {
+                setVoxel(loc + moves[i], voxel_curr);
+                setVoxel(loc, uint8_t(0));
+                break;
+            }
+        }
+        return true;
+    }
+    case 2: {
+        const ivec3 moves[1] = ivec3[](
+            ivec3(0, -1, 0)
+        );
+        for (int i = 0; i < 1; i++) {
+            if (int(getVoxel(loc + moves[i])) == 0) {
+                setVoxel(loc + moves[i], voxel_curr);
+                setVoxel(loc, uint8_t(0));
+                break;
+            }
+        }
+        return true;
+    }
+    case 3: {
+        const ivec3 moves[17] = ivec3[](
+            ivec3(0, -1, 0),
+            ivec3(1, -1, 0),
+            ivec3(-1, -1, 0),
+            ivec3(0, -1, 1),
+            ivec3(0, -1, -1),
+            ivec3(-1, -1, -1),
+            ivec3(1, -1, 1),
+            ivec3(1, -1, -1),
+            ivec3(-1, -1, 1),
+            ivec3(1, 0, 0),
+            ivec3(-1, 0, 0),
+            ivec3(0, 0, 1),
+            ivec3(0, 0, -1),
+            ivec3(-1, 0, -1),
+            ivec3(1, 0, 1),
+            ivec3(1, 0, -1),
+            ivec3(-1, 0, 1)
+        );
+        for (int i = 0; i < 17; i++) {
+            if (int(getVoxel(loc + moves[i])) == 0) {
+                setVoxel(loc + moves[i], voxel_curr);
+                setVoxel(loc, uint8_t(0));
+                break;
+            }
+        }
+        return true;
+    }
+    default: {
+        return true;
+    }
+    }
+}
+
+bool evolveSubchunk(ivec3 base_offset, ivec3 subchunk_offset, int subchunk_size) {
+    bool empty_subchunk = true;
+    int world_size = scene_info.world_dimensions.y;
+    for (int i = 0; i < subchunk_size; i++) {
+        for (int j = 0; j < subchunk_size; j++) {
+            for (int k = 0; k < subchunk_size; k++) {
+                ivec3 curr = base_offset + subchunk_offset + ivec3(k, i, j);
+                if (curr.x >= 0 && curr.x < world_size &&
+                    curr.y >= 0 && curr.y < world_size &&
+                    curr.z >= 0 && curr.z < world_size)
+                {
+                    if (evolveVoxel(base_offset, subchunk_offset, ivec3(k, i, j))) {
+                        empty_subchunk = false;
+                    }
+                }
+            }
+        }
+    }
+    return empty_subchunk;
+}
+
+void main() {
+    int chunk_size = 16;
+    int subchunk_size = chunk_size / 2;
+
+    ivec3 base_offset = ivec3(gl_GlobalInvocationID.xyz) * chunk_size;
+    bool empty_subchunk = evolveSubchunk(base_offset, push.subchunk_offset, subchunk_size);
+
+    ivec3 subchunk_coords = ivec3(gl_GlobalInvocationID.xyz) * 2 + push.subchunk_location;
+    ivec3 num_subchunks = scene_info.world_dimensions / subchunk_size;
+    int subchunk_index = subchunk_coords.z * num_subchunks.y * num_subchunks.x + subchunk_coords.y * num_subchunks.x + subchunk_coords.x;
+    subchunk_state[subchunk_index] = uint8_t(empty_subchunk);
+}

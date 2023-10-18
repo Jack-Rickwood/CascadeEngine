@@ -1,0 +1,8 @@
+Header Section:
+- Magic Number (4 Bytes) = "CCST"
+- X Size (2 Bytes)
+- Y Size (2 Bytes)
+- Z Size (2 Bytes)
+
+Data Section:
+- Sequence of 'X Size * Y Size * Z Size' bytes, where each byte represents the type of the block at that location

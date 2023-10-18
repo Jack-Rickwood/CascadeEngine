@@ -1,0 +1,465 @@
+Renderer.1 {
+    BackgroundColor = rgba(180, 180, 180, 215);
+    BorderColor = rgba(240, 240, 240, 215);
+    Borders = 1;
+    TextureBackground = None;
+}
+
+Renderer.2 {
+    BackgroundColor = transparent;
+    BorderColor = #3C3C3C;
+    Borders = (0, 0, 0, 0);
+    TextColor = #3C3C3C;
+    TextureBackground = None;
+
+    Scrollbar {
+        ArrowBackgroundColor = #F5F5F5;
+        ArrowBackgroundColorHover = white;
+        ArrowColor = #3C3C3C;
+        ArrowColorHover = black;
+        TextureArrowDown = None;
+        TextureArrowDownHover = None;
+        TextureArrowUp = None;
+        TextureArrowUpHover = None;
+        TextureThumb = None;
+        TextureThumbHover = None;
+        TextureTrack = None;
+        TextureTrackHover = None;
+        ThumbColor = #DCDCDC;
+        ThumbColorHover = #E6E6E6;
+        TrackColor = #F5F5F5;
+    }
+}
+
+Renderer.3 {
+    BorderColor = Black;
+    TextureThumb = "themes/Black.png" Part(253, 171, 30, 30) Smooth;
+    TextureThumbHover = None;
+    TextureTrack = "themes/Black.png" Part(172, 209, 20, 45) Middle(0, 15) Smooth;
+    TextureTrackHover = "themes/Black.png" Part(194, 209, 20, 45) Middle(0, 15) Smooth;
+    ThumbColor = rgb(190, 190, 190);
+    TrackColor = rgb(80, 80, 80);
+}
+
+Renderer.4 {
+    ArrowBackgroundColor = #F5F5F5;
+    ArrowBackgroundColorHover = white;
+    ArrowColor = #3C3C3C;
+    ArrowColorHover = black;
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BorderColor = black;
+    Borders = (1, 1, 1, 1);
+    Padding = (0, 0, 0, 0);
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    TextureArrow = None;
+    TextureArrowDisabled = None;
+    TextureArrowHover = None;
+    TextureBackground = None;
+    TextureBackgroundDisabled = None;
+
+    ListBox {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorHover = white;
+        BorderColor = black;
+        Borders = (1, 1, 1, 1);
+        Padding = (0, 0, 0, 0);
+        SelectedBackgroundColor = #006EFF;
+        SelectedBackgroundColorHover = #1E96FF;
+        SelectedTextColor = white;
+        TextColor = #3C3C3C;
+        TextColorHover = black;
+        TextureBackground = None;
+
+        Scrollbar {
+            ArrowBackgroundColor = #F5F5F5;
+            ArrowBackgroundColorHover = white;
+            ArrowColor = #3C3C3C;
+            ArrowColorHover = black;
+            TextureArrowDown = None;
+            TextureArrowDownHover = None;
+            TextureArrowUp = None;
+            TextureArrowUpHover = None;
+            TextureThumb = None;
+            TextureThumbHover = None;
+            TextureTrack = None;
+            TextureTrackHover = None;
+            ThumbColor = #DCDCDC;
+            ThumbColorHover = #E6E6E6;
+            TrackColor = #F5F5F5;
+        }
+    }
+}
+
+Renderer.5 {
+    BorderColor = Black;
+    TextureThumb = "themes/Black.png" Part(253, 171, 30, 30) Smooth;
+    TextureThumbHover = None;
+    TextureTrack = "themes/Black.png" Part(172, 209, 20, 45) Middle(0, 15) Smooth;
+    TextureTrackHover = "themes/Black.png" Part(194, 209, 20, 45) Middle(0, 15) Smooth;
+    ThumbColor = rgb(190, 190, 190);
+    TrackColor = rgb(80, 80, 80);
+}
+
+Panel.RenderingPanel {
+    Position = (20, 20);
+    Size = (760, 750);
+
+    Renderer {
+        BackgroundColor = rgb(80, 80, 80);
+        BorderColor = Black;
+        TextureBackground = None;
+    }
+
+    Label.RenderingLabel {
+        Position = (110, 20);
+        Size = (128, 32.3595);
+        Text = Rendering;
+        TextSize = 23;
+
+        Renderer {
+            BorderColor = rgba(240, 240, 240, 215);
+            TextColor = rgba(255, 255, 255, 215);
+            TextureBackground = None;
+
+            Scrollbar {
+                ArrowBackgroundColor = rgba(160, 160, 160, 215);
+                ArrowBackgroundColorHover = rgba(170, 170, 170, 215);
+                ArrowColor = rgba(200, 200, 200, 215);
+                ArrowColorHover = rgba(225, 225, 225, 215);
+                TextureArrowDown = None;
+                TextureArrowDownHover = None;
+                TextureArrowUp = None;
+                TextureArrowUpHover = None;
+                TextureThumb = None;
+                TextureThumbHover = None;
+                TextureTrack = None;
+                TextureTrackHover = None;
+                ThumbColor = rgba(185, 185, 185, 215);
+                ThumbColorHover = rgba(195, 195, 195, 215);
+                TrackColor = rgba(160, 160, 160, 215);
+                TrackColorHover = rgba(170, 170, 170, 215);
+            }
+        }
+    }
+
+    Panel.AtrousFilterPanel {
+        Position = (10, 350);
+        Renderer = &1;
+        Size = (360, 250);
+
+        Label.pPhiLabel {
+            AutoSize = true;
+            Position = (10, 210);
+            Renderer = &2;
+            Size = (49, 19);
+            Text = "p_phi:";
+            TextSize = 14;
+        }
+
+        Label.atrousEnableLabel {
+            AutoSize = true;
+            Position = (10, 50);
+            Renderer = &2;
+            Size = (58, 19);
+            Text = "enable:";
+            TextSize = 14;
+        }
+
+        Label.atrousIterationsLabel {
+            AutoSize = true;
+            Position = (10, 90);
+            Renderer = &2;
+            Size = (79, 19);
+            Text = "iterations:";
+            TextSize = 14;
+        }
+
+        CheckBox.atrousEnableCheckBox {
+            Checked = true;
+            Position = (330, 50);
+            Size = (17, 17);
+            TextSize = 13;
+
+            Renderer {
+                BackgroundColor = rgb(80, 80, 80);
+                BackgroundColorHover = rgb(100, 100, 100);
+                BorderColor = Black;
+                CheckColor = rgb(190, 190, 190);
+                TextColor = rgb(190, 190, 190);
+                TextColorHover = rgb(250, 250, 250);
+                TextureChecked = "themes/Black.png" Part(219, 171, 32, 32) Smooth;
+                TextureCheckedDisabled = None;
+                TextureCheckedFocused = "themes/Black.png" Part(221, 69, 32, 32) Smooth;
+                TextureCheckedHover = "themes/Black.png" Part(221, 1, 32, 32) Smooth;
+                TextureUnchecked = "themes/Black.png" Part(125, 209, 32, 32) Smooth;
+                TextureUncheckedDisabled = None;
+                TextureUncheckedFocused = "themes/Black.png" Part(216, 209, 32, 32) Smooth;
+                TextureUncheckedHover = "themes/Black.png" Part(221, 35, 32, 32) Smooth;
+            }
+        }
+
+        Slider.cPhiSlider {
+            ChangeValueOnScroll = true;
+            InvertedDirection = false;
+            Maximum = 30;
+            Minimum = 0;
+            Position = (120, 130);
+            Renderer = &3;
+            Size = (190, 16);
+            Step = 1;
+            Value = 30;
+        }
+
+        Slider.pPhiSlider {
+            ChangeValueOnScroll = true;
+            InvertedDirection = false;
+            Maximum = 30;
+            Minimum = 0;
+            Position = (120, 210);
+            Renderer = &3;
+            Size = (200, 16);
+            Step = 1;
+            Value = 0;
+        }
+
+        Label.cPhiLabel {
+            AutoSize = true;
+            Position = (10, 130);
+            Renderer = &2;
+            Size = (47, 19);
+            Text = "c_phi:";
+            TextSize = 14;
+        }
+
+        Label.nPhiLabel {
+            AutoSize = true;
+            Position = (10, 170);
+            Renderer = &2;
+            Size = (48, 19);
+            Text = "n_phi:";
+            TextSize = 14;
+        }
+
+        ComboBox.atrousIterationsComboBox {
+            ChangeItemOnScroll = false;
+            Items = [1, 2, 3, 4, 5];
+            ItemsToDisplay = 0;
+            MaximumItems = 0;
+            Position = (120, 90);
+            Renderer = &4;
+            Size = (230, 21);
+            TextSize = 13;
+        }
+
+        Slider.nPhiSlider {
+            ChangeValueOnScroll = true;
+            InvertedDirection = false;
+            Maximum = 30;
+            Minimum = 0;
+            Position = (120, 170);
+            Renderer = &3;
+            Size = (200, 16);
+            Step = 1;
+            Value = 0;
+        }
+
+        Label.atrousFilterLabel {
+            AutoSize = true;
+            Position = (10, 10);
+            Renderer = &2;
+            Size = (120, 23);
+            Text = "Atrous Filter";
+            TextSize = 18;
+        }
+
+        Label.cPhiNumber {
+            AutoSize = true;
+            Position = (325, 130);
+            Renderer = &2;
+            Size = (31, 17);
+            Text = "1.00";
+            TextSize = 12;
+        }
+
+        Label.nPhiNumber {
+            AutoSize = true;
+            Position = (325, 170);
+            Renderer = &2;
+            Size = (32, 17);
+            Text = "0.05";
+            TextSize = 13;
+        }
+
+        Label.pPhiNumber {
+            AutoSize = true;
+            Position = (325, 210);
+            Renderer = &2;
+            Size = (32, 17);
+            Text = "0.05";
+            TextSize = 13;
+        }
+    }
+
+    Panel.GeneralPanel {
+        Position = (10, 70);
+        Renderer = &1;
+        Size = (360, 270);
+
+        Label.generalRenderingLabel {
+            AutoSize = true;
+            Position = (10, 10);
+            Renderer = &2;
+            Size = (77, 23);
+            Text = General;
+            TextSize = 18;
+        }
+
+        Label.maxRayStepsLabel {
+            AutoSize = true;
+            Position = (10, 50);
+            Renderer = &2;
+            Size = (109, 19);
+            Text = "max ray steps:";
+            TextSize = 14;
+        }
+
+        Label.maxRayBouncesLabel {
+            AutoSize = true;
+            Position = (10, 90);
+            Renderer = &2;
+            Size = (129, 19);
+            Text = "max ray bounces:";
+            TextSize = 14;
+        }
+
+        Label.raysPerPixelLabel {
+            AutoSize = true;
+            Position = (10, 130);
+            Renderer = &2;
+            Size = (106, 19);
+            Text = "rays per pixel:";
+            TextSize = 14;
+        }
+
+        Slider.raysPerPixelSlider {
+            ChangeValueOnScroll = true;
+            InvertedDirection = false;
+            Maximum = 10;
+            Minimum = 0;
+            Position = (170, 130);
+            Renderer = &5;
+            Size = (160, 16);
+            Step = 1;
+            Value = 0;
+        }
+
+        Slider.maxRayBouncesSlider {
+            ChangeValueOnScroll = true;
+            InvertedDirection = false;
+            Maximum = 10;
+            Minimum = 0;
+            Position = (170, 90);
+            Renderer = &5;
+            Size = (160, 16);
+            Step = 1;
+            Value = 0;
+        }
+
+        ComboBox.maxRayStepsComboBox {
+            ChangeItemOnScroll = false;
+            Items = [16, 32, 64, 128, 256, 512, 1024, 2048];
+            ItemsToDisplay = 0;
+            MaximumItems = 0;
+            Position = (170, 50);
+            Renderer = &4;
+            Size = (180, 21);
+            TextSize = 13;
+        }
+
+        Label.maxRayBouncesNumber {
+            AutoSize = true;
+            Position = (340, 90);
+            Renderer = &2;
+            Size = (12, 17);
+            Text = 1;
+            TextSize = 13;
+        }
+
+        Label.raysPerPixelNumber {
+            AutoSize = true;
+            Position = (340, 130);
+            Renderer = &2;
+            Size = (12, 17);
+            Text = 1;
+            TextSize = 13;
+        }
+
+        CheckBox.tempAccumCheckBox {
+            Checked = true;
+            Position = (330, 210);
+            Size = (17, 17);
+            TextSize = 13;
+
+            Renderer {
+                BackgroundColor = rgb(80, 80, 80);
+                BackgroundColorHover = rgb(100, 100, 100);
+                BorderColor = Black;
+                CheckColor = rgb(190, 190, 190);
+                TextColor = rgb(190, 190, 190);
+                TextColorHover = rgb(250, 250, 250);
+                TextureChecked = "themes/Black.png" Part(219, 171, 32, 32) Smooth;
+                TextureCheckedDisabled = None;
+                TextureCheckedFocused = "themes/Black.png" Part(221, 69, 32, 32) Smooth;
+                TextureCheckedHover = "themes/Black.png" Part(221, 1, 32, 32) Smooth;
+                TextureUnchecked = "themes/Black.png" Part(125, 209, 32, 32) Smooth;
+                TextureUncheckedDisabled = None;
+                TextureUncheckedFocused = "themes/Black.png" Part(216, 209, 32, 32) Smooth;
+                TextureUncheckedHover = "themes/Black.png" Part(221, 35, 32, 32) Smooth;
+            }
+        }
+
+        Label.tempAccumLabel {
+            AutoSize = true;
+            Position = (10, 210);
+            Renderer = &2;
+            Size = (175, 19);
+            Text = "temporal accumulation:";
+            TextSize = 14;
+        }
+
+        CheckBox.blueNoiseCheckBox {
+            Checked = true;
+            Position = (330, 170);
+            Size = (17, 17);
+            TextSize = 13;
+
+            Renderer {
+                BackgroundColor = rgb(80, 80, 80);
+                BackgroundColorHover = rgb(100, 100, 100);
+                BorderColor = Black;
+                CheckColor = rgb(190, 190, 190);
+                TextColor = rgb(190, 190, 190);
+                TextColorHover = rgb(250, 250, 250);
+                TextureChecked = "themes/Black.png" Part(219, 171, 32, 32) Smooth;
+                TextureCheckedDisabled = None;
+                TextureCheckedFocused = "themes/Black.png" Part(221, 69, 32, 32) Smooth;
+                TextureCheckedHover = "themes/Black.png" Part(221, 1, 32, 32) Smooth;
+                TextureUnchecked = "themes/Black.png" Part(125, 209, 32, 32) Smooth;
+                TextureUncheckedDisabled = None;
+                TextureUncheckedFocused = "themes/Black.png" Part(216, 209, 32, 32) Smooth;
+                TextureUncheckedHover = "themes/Black.png" Part(221, 35, 32, 32) Smooth;
+            }
+        }
+
+        Label.blueNoiseLabel {
+            AutoSize = true;
+            Position = (10, 170);
+            Renderer = &2;
+            Size = (82, 19);
+            Text = "blue noise:";
+            TextSize = 14;
+        }
+    }
+}

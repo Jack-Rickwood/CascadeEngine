@@ -1,0 +1,133 @@
+#version 450
+
+precision mediump float;
+
+#include "math.glslh"
+
+
+
+/* ===== Shader Input ===== */
+layout (local_size_x = 32, local_size_y = 32) in;
+
+layout (binding = 0, set = 0, rgba8) uniform image2D finalImage;
+
+layout (binding = 0, set = 1, rgba8) uniform image2D colorImage;
+
+layout (binding = 0, set = 2, rgba8) uniform image2D oldColorImage;
+
+layout (binding = 0, set = 3, rgba8) uniform image2D normalImage;
+
+layout (binding = 0, set = 4, rgba8) uniform image2D positionImage;
+
+layout (push_constant) uniform Push {
+    int use_smart_denoise;
+    int use_atrous_denoise;
+    int denoise_iteration;
+    float c_phi;
+    float n_phi;
+    float p_phi;
+} push;
+
+
+
+/* ===== Smart Denoise Filter ===== */
+vec4 smartDenoise(vec2 uv, float sigma, float kSigma, float threshold) {
+    float radius = round(kSigma*sigma);
+    float radQ = radius * radius;
+    
+    float invSigmaQx2 = .5 / (sigma * sigma);
+    float invSigmaQx2PI = INV_PI * invSigmaQx2;
+    
+    float invThresholdSqx2 = .5 / (threshold * threshold);
+    float invThresholdSqrt2PI = INV_SQRT_OF_2PI / threshold;
+    
+    vec4 centrPx = imageLoad(colorImage, ivec2(uv));
+    
+    float zBuff = 0.0;
+    vec4 aBuff = vec4(0.0);
+    
+    for(float x = -radius; x <= radius; x++) {
+        float pt = sqrt(radQ-x*x);
+        for(float y=-pt; y <= pt; y++) {
+            vec2 d = vec2(x,y);
+
+            float blurFactor = exp( -dot(d , d) * invSigmaQx2 ) * invSigmaQx2PI; 
+            
+            vec4 walkPx =  imageLoad(colorImage, ivec2(uv+d));
+
+            vec4 dC = walkPx-centrPx;
+            float deltaFactor = exp( -dot(dC, dC) * invThresholdSqx2) * invThresholdSqrt2PI * blurFactor;
+                                 
+            zBuff += deltaFactor;
+            aBuff += deltaFactor*walkPx;
+        }
+    }
+    return aBuff/zBuff;
+}
+
+
+
+/* ===== A-Trous Wavelet Filter ===== */
+#define KERNEL_SIZE 25
+const float kernel[KERNEL_SIZE] = float[](
+    0.1875, 0.1875, 0.1875, 0.1875, 0.1875,
+    0.1875, 0.2500, 0.2500, 0.2500, 0.1875,
+    0.1875, 0.2500, 0.3750, 0.2500, 0.1875,
+    0.1875, 0.2500, 0.2500, 0.2500, 0.1875,
+    0.1875, 0.1875, 0.1875, 0.1875, 0.1875
+);
+
+vec4 atrousFilter(int iteration, ivec2 coords, float c_phi, float n_phi, float p_phi) {
+    float step_size = pow(2.0, float(iteration));
+    vec4 sum = vec4(0.0);
+
+    vec4 cval = imageLoad(colorImage, coords);
+    vec4 nval = imageLoad(normalImage, coords);
+    vec4 pval = imageLoad(positionImage, coords);
+
+    float cum_weight = 0.0;
+    int kern_dimen = int(sqrt(float(KERNEL_SIZE)));
+    int off_bound = (kern_dimen - 1) / 2;
+    for (int y = -off_bound; y <= off_bound; y++) {
+        for (int x = -off_bound; x <= off_bound; x++) {
+            vec2 offset = vec2(x, y) * step_size;
+            ivec2 sample_coords = ivec2(coords + offset);
+
+            vec4 ctmp = imageLoad(colorImage, sample_coords);
+            vec4 t = cval - ctmp;
+            float dist2 = dot(t, t);
+            float c_weight = min(exp(-(dist2)/c_phi), 1.0);
+
+            vec4 ntmp = imageLoad(normalImage, sample_coords);
+            t = nval - ntmp;
+            dist2 = max(dot(t, t) / (step_size * step_size), 0.0);
+            float n_weight = min(exp(-(dist2)/n_phi), 1.0);
+
+            vec4 ptmp = imageLoad(positionImage, sample_coords);
+            t = pval - ptmp;
+            dist2 = dot(t, t);
+            float p_weight = min(exp(-(dist2)/(p_phi * 0.001f)), 1.0);
+
+            float weight = c_weight * n_weight * p_weight;
+            int kern_ind = y * kern_dimen + x;
+            sum += ctmp * weight * kernel[kern_ind];
+            cum_weight += weight * kernel[kern_ind];
+        }
+    }
+
+    return sum / cum_weight;
+}
+
+
+
+/* ===== Main Function ===== */
+void main() {
+    vec4 curr;
+    if (push.use_atrous_denoise != 0) {
+        curr = atrousFilter(push.denoise_iteration, ivec2(gl_GlobalInvocationID.xy), push.c_phi, push.n_phi, push.p_phi);
+    }
+    if (push.use_smart_denoise == 0 && push.use_atrous_denoise == 0) {
+        curr = imageLoad(colorImage, ivec2(gl_GlobalInvocationID.xy));
+    }
+    imageStore(finalImage, ivec2(gl_GlobalInvocationID.xy), curr);
+}

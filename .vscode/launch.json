@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "clang++ - Build and debug active file",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/raytrace",
+            "cwd": "${workspaceFolder}/build",
+            "args": [
+
+            ],
+        }
+    ]
+}

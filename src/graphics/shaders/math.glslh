@@ -1,0 +1,58 @@
+#define PI 3.14159265359
+#define INV_SQRT_OF_2PI 0.39894228040143267793994605993439 
+#define INV_PI 0.31830988618379067153776752674503
+
+float hash(vec2 n) { 
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
+vec2 hammersley(uint i, uint N) {
+    return vec2(float(i) / float(N), float(bitfieldReverse(i)) * 2.3283064365386963e-10);
+}
+
+float blueNoise(vec2 U) {                           // 5-tap version 
+    float v =  hash( U + vec2(-1, 0) )
+             + hash( U + vec2( 1, 0) )
+             + hash( U + vec2( 0, 1) )
+             + hash( U + vec2( 0,-1) ); 
+    return  hash(U) - v/4.  + .5;
+}
+
+vec3 randomDirectionBlueNoise(vec2 loc1, vec2 loc2, uint ray_index, uint total_rays) {
+    vec2 xi = fract(vec2(blueNoise(loc1), blueNoise(loc2)) + hammersley(ray_index, total_rays));
+    
+    float phi      = xi.y * 2.0 * PI;
+    float cosTheta = sqrt(1.0 - xi.x);
+    float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+     
+    return vec3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);
+}
+
+vec3 randomHemisphereDirectionBlueNoise(vec2 loc1, vec2 loc2, vec3 normal, uint ray_index, uint total_rays) {
+    vec3 dir = randomDirectionBlueNoise(loc1, loc2, ray_index, total_rays);
+    return dir * sign(dot(normal, dir));
+}
+
+float randomValue(inout uint seed) {
+    seed = seed * 747796405 + 2891336453;
+    uint result = ((seed >> ((seed >> 28) + 4)) ^ seed) * 277803737;
+    return result / 4294967295.0;
+}
+
+float randomValueNormalDistribution(inout uint seed) {
+    float theta = 2 * 3.1415926 * randomValue(seed);
+    float rho = sqrt(-2 * log(randomValue(seed)));
+    return rho * cos(theta);
+}
+
+vec3 randomDirection(inout uint seed) {
+    float x = randomValueNormalDistribution(seed);
+    float y = randomValueNormalDistribution(seed);
+    float z = randomValueNormalDistribution(seed);
+    return normalize(vec3(x, y, z));
+}
+
+vec3 randomHemisphereDirection(inout uint rng_seed, vec3 normal) {
+    vec3 dir = randomDirection(rng_seed);
+    return dir * sign(dot(normal, dir));
+}
