@@ -19,11 +19,7 @@ namespace cscd {
 
 class Renderer {
 public:
-#ifdef DEBUG_MODE
     const std::string shader_dir = "src/graphics/shaders/";
-#else
-    const std::string shader_dir = "shaders/";
-#endif
 
     Renderer(Window& window_, Device& device_, SceneInfo& scene_info_, std::string state_path);
     ~Renderer();

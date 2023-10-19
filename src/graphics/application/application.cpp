@@ -32,7 +32,7 @@ void Application::run() {
         auto new_time = std::chrono::high_resolution_clock::now();
         float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(new_time - curr_time).count();
         curr_time = new_time;
-        // std::cout << std::to_string(1.0f / frame_time) << std::endl;
+        std::cout << std::to_string(1.0f / frame_time) << std::endl;
 
         camera_controller.update(window.getGLFWWindow(), frame_time, scene_info);
 

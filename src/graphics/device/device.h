@@ -6,7 +6,7 @@
 #include "externals/VMA/vk_mem_alloc.h"
 #include "graphics/window/window.h"
 
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 namespace cscd {
 

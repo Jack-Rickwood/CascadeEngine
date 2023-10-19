@@ -89,6 +89,11 @@ VoxelMaterial getVoxel(ivec3 loc) {
     }
 }
 
+bool getSubchunk(ivec3 pos, ivec3 num_subchunks) {
+    int index = pos.z * num_subchunks.y * num_subchunks.x + pos.y * num_subchunks.x + pos.x;
+    return bool(subchunk_state[index]);
+}
+
 
 
 /* ===== Raytracing Implementation ===== */
