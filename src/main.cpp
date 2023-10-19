@@ -23,7 +23,7 @@ void writeExampleState() {
 }
 
 void writeExampleStatePerlin() {
-    cscd::file::State world_state{64, 64, 64};
+    cscd::file::State world_state{256, 256, 256};
 
     world_state.fillPerlin();
     world_state.writeToFile("state.ccst");

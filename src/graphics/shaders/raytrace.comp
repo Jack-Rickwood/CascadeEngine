@@ -4,7 +4,7 @@
 #extension GL_EXT_shader_8bit_storage: require
 #extension GL_EXT_scalar_block_layout: require
 
-precision highp float;
+precision lowp float;
 
 #include "math.glslh"
 
@@ -99,17 +99,40 @@ struct ray {
 
 struct traceRayInfo {
     vec3 incoming_light;
-    vec3 old_camera_adj_direction;
+    vec3 ray_color;
+    vec3 initial_hit_pos;
+    vec3 initial_hit_normal;
+    vec3 initial_incoming_light;
+    vec3 initial_ray_color;
+    bool hit_voxel;
 };
 
-traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index) {
-    vec3 incoming_light = vec3(0.0f);
-    vec3 ray_color = vec3(1.0f);
+traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index, vec3 incoming_light_init, vec3 ray_color_init, bool skip_first_ray) {
+    vec3 incoming_light = incoming_light_init;
+    vec3 ray_color = ray_color_init;
 
     bool first_bounce = true;
-    vec3 initial_hit_pos = ray_pos;
+
+    traceRayInfo ray_info;
+    ray_info.initial_hit_pos = ray_pos;
+    ray_info.initial_hit_normal = ray_dir;
+    ray_info.initial_incoming_light = incoming_light_init;
+    ray_info.initial_ray_color = ray_color_init;
     for (int raybounce = 0; raybounce < push.max_bounces; raybounce++) {
         uint total_ray_index = ray_index * push.max_bounces + raybounce;
+
+        if (raybounce == 0 && skip_first_ray) {
+            vec2 frame_offset = scene_info.screen_dimensions * (push.frame_num % 8);
+            ray_dir = randomHemisphereDirectionBlueNoise(
+                gl_GlobalInvocationID.xy + frame_offset,
+                gl_GlobalInvocationID.xy + 8 * scene_info.screen_dimensions + frame_offset,
+                ray_dir, 
+                total_ray_index, 
+                push.max_bounces * push.rays_per_pixel
+            );
+            first_bounce = false;
+            continue;
+        }
 
         ivec3 voxel_pos = ivec3(floor(ray_pos + 0.));
 
@@ -168,12 +191,14 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index) {
         }
 
         if (hit) {
+            normal_pos = ray_pos + (final_t - 0.01f) * ray_dir;
+
             // Send a new ray at an angle to the surface that was hit
-            ray_pos = ray_pos + (final_t - 0.01f) * ray_dir;
-            vec2 frame_offset = scene_info.screen_dimensions * (push.frame_num % 4);
+            ray_pos = normal_pos;
+            vec2 frame_offset = scene_info.screen_dimensions * (push.frame_num % 8);
             ray_dir = randomHemisphereDirectionBlueNoise(
                 gl_GlobalInvocationID.xy + frame_offset,
-                gl_GlobalInvocationID.xy + 4 * scene_info.screen_dimensions + frame_offset,
+                gl_GlobalInvocationID.xy + 8 * scene_info.screen_dimensions + frame_offset,
                 normal_dir, 
                 total_ray_index, 
                 push.max_bounces * push.rays_per_pixel
@@ -187,7 +212,10 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index) {
             if (first_bounce) {
                 imageStore(normalImage, ivec2(gl_GlobalInvocationID.xy), vec4(normal_dir * 0.5f + 0.5f, 1.0f));
                 imageStore(positionImage, ivec2(gl_GlobalInvocationID.xy), vec4(vec3(voxel_pos) / scene_info.world_dimensions, 1.0f));
-                initial_hit_pos = normal_pos;
+                ray_info.initial_hit_pos = normal_pos;
+                ray_info.initial_hit_normal = normal_dir;
+                ray_info.initial_incoming_light = incoming_light;
+                ray_info.initial_ray_color = ray_color;
                 first_bounce = false;
             }
         } else {
@@ -197,9 +225,9 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index) {
         }
     }
 
-    traceRayInfo ray_info;
     ray_info.incoming_light = incoming_light;
-    ray_info.old_camera_adj_direction = normalize(initial_hit_pos - scene_info.old_camera_position);
+    ray_info.ray_color = ray_color;
+    ray_info.hit_voxel = !first_bounce;
     
     return ray_info;
 }
@@ -242,15 +270,20 @@ void main() {
     vec3 ray_pos = scene_info.camera_position;
     vec3 ray_dir = pixelToRay(gl_GlobalInvocationID.xy, scene_info.screen_dimensions, 3.141592f / 2.0f, scene_info.camera_direction);
 
-    vec3 total_incoming_light = vec3(0.0f);
-    traceRayInfo ray_info;
-    for (int ray_index = 0; ray_index < push.rays_per_pixel; ray_index++) {
-        ray_info = traceRay(ray_pos, ray_dir, ray_index);
-        total_incoming_light += ray_info.incoming_light;
+    traceRayInfo init_ray_info = traceRay(ray_pos, ray_dir, 0, vec3(0.0f), vec3(1.0f), false);
+    traceRayInfo curr_ray_info;
+    vec3 total_incoming_light = init_ray_info.incoming_light;
+    if (init_ray_info.hit_voxel) {
+        for (int ray_index = 1; ray_index < push.rays_per_pixel; ray_index++) {
+            curr_ray_info = traceRay(init_ray_info.initial_hit_pos, init_ray_info.initial_hit_normal, ray_index, init_ray_info.initial_incoming_light, init_ray_info.initial_ray_color, true);
+            total_incoming_light += curr_ray_info.incoming_light;
+        }
+    } else {
+        total_incoming_light *= push.rays_per_pixel;
     }
     vec3 new_pixel_color = total_incoming_light / push.rays_per_pixel;
 
-    vec2 old_screen_coords = rayToPixel(ray_info.old_camera_adj_direction, scene_info.screen_dimensions, 3.141592f / 2.0f, scene_info.old_camera_direction);
+    vec2 old_screen_coords = rayToPixel(normalize(init_ray_info.initial_hit_pos - scene_info.old_camera_position), scene_info.screen_dimensions, 3.141592f / 2.0f, scene_info.old_camera_direction);
     vec3 old_pixel_color = vec3(imageLoad(oldColorImage, ivec2(old_screen_coords)));
 
     vec3 final_color;
