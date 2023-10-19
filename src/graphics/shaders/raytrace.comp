@@ -166,22 +166,18 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index) {
                 }
             }
         }
-        normal_pos = ray_pos + (final_t - 0.01f) * ray_dir;
 
         if (hit) {
             // Send a new ray at an angle to the surface that was hit
-            uint pixel_index = gl_GlobalInvocationID.y * scene_info.screen_dimensions.x + gl_GlobalInvocationID.x;
-            ray_pos = normal_pos;
-            if (push.use_blue_noise != 0) {
-                vec2 frame_offset = scene_info.screen_dimensions * (push.frame_num % 4);
-                ray_dir = randomHemisphereDirectionBlueNoise(gl_GlobalInvocationID.xy + frame_offset,
-                                                             gl_GlobalInvocationID.xy + 4 * scene_info.screen_dimensions + frame_offset,
-                                                             normal_dir, 
-                                                             total_ray_index, 
-                                                             push.max_bounces * push.rays_per_pixel);
-            } else {
-                ray_dir = normalize(normal_dir + randomDirection(pixel_index));
-            }
+            ray_pos = ray_pos + (final_t - 0.01f) * ray_dir;
+            vec2 frame_offset = scene_info.screen_dimensions * (push.frame_num % 4);
+            ray_dir = randomHemisphereDirectionBlueNoise(
+                gl_GlobalInvocationID.xy + frame_offset,
+                gl_GlobalInvocationID.xy + 4 * scene_info.screen_dimensions + frame_offset,
+                normal_dir, 
+                total_ray_index, 
+                push.max_bounces * push.rays_per_pixel
+            );
 
             // Mix the color of the hit object into the ray color
             vec3 emmited_light = voxel.emmision_color * voxel.emmision_strength;
