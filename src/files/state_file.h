@@ -50,7 +50,7 @@ struct State {
     void write(int x, int y, int z, uint8_t byte);
     void writeToFile(std::string path);
 
-    void fillPerlin() { generator.generatePerlin(data.data(), x_size, y_size, z_size); }
+    void fillPerlin() { generator.generatePerlin2D(data.data(), x_size, y_size, z_size); }
 };
 
 }

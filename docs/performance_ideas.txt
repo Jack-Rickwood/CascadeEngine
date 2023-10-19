@@ -1,6 +1,0 @@
-- Raytracing:
-    - https://www.reddit.com/r/vulkan/comments/cs4jb6/bad_preformance_of_simple_ray_trace_compute_shader/
-- Physics:
-    - Only update chunks that changed in the last frame
-    - Store spaces from the same chunk / adjacent spaces closer together in memory
-    - Store the world state in the shared memory for individual SM's
