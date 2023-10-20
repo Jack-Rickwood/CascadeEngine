@@ -98,7 +98,7 @@ void Renderer::createSubchunkStateBuffer() {
 
     VmaAllocationCreateInfo allocation_info{};
     allocation_info.usage = VMA_MEMORY_USAGE_AUTO;
-    allocation_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocation_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
     allocation_info.priority = 1.0f;
 
     vmaCreateBuffer(device.allocator(), &buffer_create_info, &allocation_info, &subchunk_state_buffer, &subchunk_state_allocation, nullptr);
