@@ -72,6 +72,7 @@ private:
     void uploadState();
     void createStateDescriptors();
     void createSubchunkStateBuffer();
+    void zeroSubchunkState();
     void createSubchunkStateDescriptors();
     void createSceneInfoBuffer();
     void createSceneInfoDescriptors();

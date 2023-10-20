@@ -21,6 +21,7 @@ Renderer::Renderer(Window& window_, Device& device_, SceneInfo& scene_info_, std
     uploadState();
     createStateDescriptors();
     createSubchunkStateBuffer();
+    zeroSubchunkState();
     createSubchunkStateDescriptors();
     createSceneInfoBuffer();
     createSceneInfoDescriptors();
@@ -93,14 +94,40 @@ void Renderer::createSubchunkStateBuffer() {
     VkBufferCreateInfo buffer_create_info{};
     buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buffer_create_info.size = world_state.getSize() / (subchunk_size * subchunk_size * subchunk_size);
-    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
     VmaAllocationCreateInfo allocation_info{};
     allocation_info.usage = VMA_MEMORY_USAGE_AUTO;
-    allocation_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+    allocation_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
     allocation_info.priority = 1.0f;
 
     vmaCreateBuffer(device.allocator(), &buffer_create_info, &allocation_info, &subchunk_state_buffer, &subchunk_state_allocation, nullptr);
+}
+
+void Renderer::zeroSubchunkState() {
+    VkBuffer staging_buffer;
+    VmaAllocation staging_allocation;
+
+    int subchunk_size = scene_info.chunk_size / 2;
+    int buffer_size = world_state.getSize() / (subchunk_size * subchunk_size * subchunk_size);
+    VkBufferCreateInfo buffer_create_info{};
+    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_create_info.size = buffer_size;
+    buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    VmaAllocationCreateInfo allocation_info{};
+    allocation_info.usage = VMA_MEMORY_USAGE_AUTO;
+    allocation_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocation_info.priority = 1.0f;
+
+    VmaAllocationInfo alloc_info;
+
+    vmaCreateBuffer(device.allocator(), &buffer_create_info, &allocation_info, &staging_buffer, &staging_allocation, &alloc_info);
+
+    memset(alloc_info.pMappedData, 1, (size_t)buffer_size);
+    copyBuffer(staging_buffer, subchunk_state_buffer, buffer_size);
+
+    vmaDestroyBuffer(device.allocator(), staging_buffer, staging_allocation);
 }
 
 void Renderer::uploadState() {
