@@ -89,7 +89,8 @@ VoxelMaterial getVoxel(ivec3 loc) {
     }
 }
 
-bool getSubchunk(ivec3 pos, ivec3 num_subchunks) {
+bool getSubchunk(ivec3 pos) {
+    ivec3 num_subchunks = scene_info.world_dimensions / 8;
     if (pos.x >= 0 && pos.x < num_subchunks.x &&
         pos.y >= 0 && pos.y < num_subchunks.y &&
         pos.z >= 0 && pos.z < num_subchunks.z) {
@@ -145,75 +146,17 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index, vec3 incoming_l
             continue;
         }
 
-        /*
-        ivec3 voxel_pos = ivec3(floor(ray_pos + 0.));
+        ivec3 voxel_step = ivec3(sign(ray_dir));
+        ivec3 subchunk_step = voxel_step * 8;
 
-        vec3 t_delta_dist = abs(vec3(length(ray_dir)) / ray_dir);
-
-        ivec3 ray_step = ivec3(sign(ray_dir));
-
-        // Add tMin later
-        vec3 t_bound_dist = (sign(ray_dir) * (vec3(voxel_pos) - ray_pos) + (sign(ray_dir) * 0.5) + 0.5) * t_delta_dist;
-
-        bool hit = false;
-        float final_t = 0.0f;
-
-        VoxelMaterial voxel;
-        vec3 normal_pos = ray_pos;
-        vec3 normal_dir = ray_dir;
-
-        for (int i = 0; i < push.max_ray_steps; i++) {
-            voxel = getVoxel(voxel_pos);
-            if (!voxel.transparent) {
-                hit = true;
-                break;
-            }
-            if (t_bound_dist.x < t_bound_dist.y) {
-                if (t_bound_dist.x < t_bound_dist.z) {
-                    float face = float(voxel_pos.x) + ((0.5f * ray_step.x) + 0.5f);
-                    final_t = (face - ray_pos.x) / ray_dir.x;
-                    t_bound_dist.x += t_delta_dist.x;
-                    voxel_pos.x += ray_step.x;
-                    normal_dir = vec3(-float(ray_step.x), 0.0f, 0.0f);
-                }
-                else {
-                    float face = float(voxel_pos.z) + ((0.5f * ray_step.z) + 0.5f);
-                    final_t = (face - ray_pos.z) / ray_dir.z;
-                    t_bound_dist.z += t_delta_dist.z;
-                    voxel_pos.z += ray_step.z;
-                    normal_dir = vec3(0.0f, 0.0f, -float(ray_step.z));
-                }
-            }
-            else {
-                if (t_bound_dist.y < t_bound_dist.z) {
-                    float face = float(voxel_pos.y) + ((0.5f * ray_step.y) + 0.5f);
-                    final_t = (face - ray_pos.y) / ray_dir.y;
-                    t_bound_dist.y += t_delta_dist.y;
-                    voxel_pos.y += ray_step.y;
-                    normal_dir = vec3(0.0f, -float(ray_step.y), 0.0f);
-                }
-                else {
-                    float face = float(voxel_pos.z) + ((0.5f * ray_step.z) + 0.5f);
-                    final_t = (face - ray_pos.z) / ray_dir.z;
-                    t_bound_dist.z += t_delta_dist.z;
-                    voxel_pos.z += ray_step.z;
-                    normal_dir = vec3(0.0f, 0.0f, -float(ray_step.z));
-                }
-            }
-        }
-        */
-
-        ivec3 subchunk_step = ivec3(sign(ray_dir));
-        ivec3 voxel_step = subchunk_step * 8;
-
+        ivec3 voxel_pos = ivec3(floor(ray_pos));
         ivec3 subchunk_pos = ivec3(floor(ray_pos / 8.0f));
-        ivec3 voxel_pos = subchunk_pos * 8;
 
-        vec3 t_delta_dist = abs(vec3(8.0f) / ray_dir);
         vec3 voxel_t_delta_dist = abs(vec3(1.0f) / ray_dir);
+        vec3 t_delta_dist = voxel_t_delta_dist * 8.0f;
 
+        vec3 voxel_t_bound_dist = voxel_t_delta_dist * ((sign(ray_dir) * 0.5f + 0.5f) - sign(ray_dir) * fract(vec3(ray_pos)));
         vec3 t_bound_dist = t_delta_dist * ((sign(ray_dir) * 0.5f + 0.5f) - sign(ray_dir) * fract(vec3(ray_pos) / 8.0f));
-        vec3 voxel_t_bound_dist = (sign(ray_dir) * (vec3(voxel_pos) - ray_pos) + (sign(ray_dir) * 0.5) + 0.5) * voxel_t_delta_dist;
 
         bool hit = false;
         float final_t = 0.0f;
@@ -224,98 +167,94 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index, vec3 incoming_l
         
         int step = 0;
         while (step < push.max_ray_steps) {
-            if (getSubchunk(subchunk_pos, scene_info.world_dimensions / 8)) {
+            if (getSubchunk(subchunk_pos)) {
                 vec3 exit_subchunk_pos = ray_pos + (final_t + 0.001f) * ray_dir;
 
                 voxel_pos = ivec3(floor(exit_subchunk_pos));
+                ivec3 old_voxel_pos = ivec3(0);
+                
+                voxel_t_bound_dist = voxel_t_delta_dist * ((sign(ray_dir) * 0.5f + 0.5f) - sign(ray_dir) * fract(vec3(exit_subchunk_pos)));
 
-                voxel_t_bound_dist = (sign(ray_dir) * (vec3(voxel_pos) - exit_subchunk_pos) + (sign(ray_dir) * 0.5) + 0.5) * voxel_t_delta_dist;
+                ivec3 subchunk_min = subchunk_pos * 8;
+                ivec3 subchunk_max = subchunk_min + ivec3(7);
 
-                int finer_steps = 0;
-                while (step < push.max_ray_steps && finer_steps < 8) {
+                while (!all(equal(old_voxel_pos, voxel_pos)) && all(greaterThanEqual(voxel_pos, subchunk_min)) && all(lessThanEqual(voxel_pos, subchunk_max))) {
                     voxel = getVoxel(voxel_pos);
                     if (!voxel.transparent) {
                         hit = true;
                         break;
                     }
+
+                    old_voxel_pos = voxel_pos;
                     if (voxel_t_bound_dist.x < voxel_t_bound_dist.y) {
                         if (voxel_t_bound_dist.x < voxel_t_bound_dist.z) {
-                            float face = float(voxel_pos.x) + ((0.5f * subchunk_step.x) + 0.5f);
+                            float face = float(voxel_pos.x) + ((0.5f * voxel_step.x) + 0.5f);
                             final_t = (face - ray_pos.x) / ray_dir.x;
                             voxel_t_bound_dist.x += voxel_t_delta_dist.x;
-                            voxel_pos.x += subchunk_step.x;
-                            normal_dir = vec3(-float(subchunk_step.x), 0.0f, 0.0f);
+                            voxel_pos.x += voxel_step.x;
+                            normal_dir = vec3(-float(voxel_step.x), 0.0f, 0.0f);
                         }
                         else {
-                            float face = float(voxel_pos.z) + ((0.5f * subchunk_step.z) + 0.5f);
+                            float face = float(voxel_pos.z) + ((0.5f * voxel_step.z) + 0.5f);
                             final_t = (face - ray_pos.z) / ray_dir.z;
                             voxel_t_bound_dist.z += voxel_t_delta_dist.z;
-                            voxel_pos.z += subchunk_step.z;
-                            normal_dir = vec3(0.0f, 0.0f, -float(subchunk_step.z));
+                            voxel_pos.z += voxel_step.z;
+                            normal_dir = vec3(0.0f, 0.0f, -float(voxel_step.z));
                         }
                     }
                     else {
                         if (voxel_t_bound_dist.y < voxel_t_bound_dist.z) {
-                            float face = float(voxel_pos.y) + ((0.5f * subchunk_step.y) + 0.5f);
+                            float face = float(voxel_pos.y) + ((0.5f * voxel_step.y) + 0.5f);
                             final_t = (face - ray_pos.y) / ray_dir.y;
                             voxel_t_bound_dist.y += voxel_t_delta_dist.y;
-                            voxel_pos.y += subchunk_step.y;
-                            normal_dir = vec3(0.0f, -float(subchunk_step.y), 0.0f);
+                            voxel_pos.y += voxel_step.y;
+                            normal_dir = vec3(0.0f, -float(voxel_step.y), 0.0f);
                         }
                         else {
-                            float face = float(voxel_pos.z) + ((0.5f * subchunk_step.z) + 0.5f);
+                            float face = float(voxel_pos.z) + ((0.5f * voxel_step.z) + 0.5f);
                             final_t = (face - ray_pos.z) / ray_dir.z;
                             voxel_t_bound_dist.z += voxel_t_delta_dist.z;
-                            voxel_pos.z += subchunk_step.z;
-                            normal_dir = vec3(0.0f, 0.0f, -float(subchunk_step.z));
+                            voxel_pos.z += voxel_step.z;
+                            normal_dir = vec3(0.0f, 0.0f, -float(voxel_step.z));
                         }
                     }
-
-                    step++;
-                    finer_steps++;
                 }
 
                 if (hit) {
                     break;
                 }
-                
-                voxel_pos = subchunk_pos * 8;
             }
 
             if (t_bound_dist.x < t_bound_dist.y) {
                 if (t_bound_dist.x < t_bound_dist.z) {
-                    float face = float(voxel_pos.x) + ((0.5f * voxel_step.x) + 4.0f);
+                    float face = (float(subchunk_pos.x) + ((0.5f * voxel_step.x) + 0.5f)) * 8.0f;
                     final_t = (face - ray_pos.x) / ray_dir.x;
                     t_bound_dist.x += t_delta_dist.x;
-                    voxel_pos.x += voxel_step.x;
-                    subchunk_pos.x += subchunk_step.x;
-                    normal_dir = vec3(-float(subchunk_step.x), 0.0f, 0.0f);
+                    subchunk_pos.x += voxel_step.x;
+                    normal_dir = vec3(-float(voxel_step.x), 0.0f, 0.0f);
                 }
                 else {
-                    float face = float(voxel_pos.z) + ((0.5f * voxel_step.z) + 4.0f);
+                    float face = (float(subchunk_pos.z) + ((0.5f * voxel_step.z) + 0.5f)) * 8.0f;
                     final_t = (face - ray_pos.z) / ray_dir.z;
                     t_bound_dist.z += t_delta_dist.z;
-                    voxel_pos.z += voxel_step.z;
-                    subchunk_pos.z += subchunk_step.z;
-                    normal_dir = vec3(0.0f, 0.0f, -float(subchunk_step.z));
+                    subchunk_pos.z += voxel_step.z;
+                    normal_dir = vec3(0.0f, 0.0f, -float(voxel_step.z));
                 }
             }
             else {
                 if (t_bound_dist.y < t_bound_dist.z) {
-                    float face = float(voxel_pos.y) + ((0.5f * voxel_step.y) + 4.0f);
+                    float face = (float(subchunk_pos.y) + ((0.5f * voxel_step.y) + 0.5f)) * 8.0f;
                     final_t = (face - ray_pos.y) / ray_dir.y;
                     t_bound_dist.y += t_delta_dist.y;
-                    voxel_pos.y += voxel_step.y;
-                    subchunk_pos.y += subchunk_step.y;
-                    normal_dir = vec3(0.0f, -float(subchunk_step.y), 0.0f);
+                    subchunk_pos.y += voxel_step.y;
+                    normal_dir = vec3(0.0f, -float(voxel_step.y), 0.0f);
                 }
                 else {
-                    float face = float(voxel_pos.z) + ((0.5f * voxel_step.z) + 4.0f);
+                    float face = (float(subchunk_pos.z) + ((0.5f * voxel_step.z) + 0.5f)) * 8.0f;
                     final_t = (face - ray_pos.z) / ray_dir.z;
                     t_bound_dist.z += t_delta_dist.z;
-                    voxel_pos.z += voxel_step.z;
-                    subchunk_pos.z += subchunk_step.z;
-                    normal_dir = vec3(0.0f, 0.0f, -float(subchunk_step.z));
+                    subchunk_pos.z += voxel_step.z;
+                    normal_dir = vec3(0.0f, 0.0f, -float(voxel_step.z));
                 }
             }
             step += 8;
@@ -323,7 +262,7 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index, vec3 incoming_l
 
 
         if (hit) {
-            normal_pos = ray_pos + (final_t - 0.001f) * ray_dir;
+            normal_pos = ray_pos + (final_t - 0.002f) * ray_dir;
 
             // Send a new ray at an angle to the surface that was hit
             ray_pos = normal_pos;
@@ -351,7 +290,7 @@ traceRayInfo traceRay(vec3 ray_pos, vec3 ray_dir, int ray_index, vec3 incoming_l
                 first_bounce = false;
             }
         } else {
-            VoxelMaterial ambient = VoxelMaterial(true, vec3(1.0f), vec3(1.0f), 0.2f);
+            VoxelMaterial ambient = VoxelMaterial(true, vec3(0.0f), vec3(1.0f), 0.2f);
             incoming_light += ambient.emmision_color * ambient.emmision_strength * ray_color;
             break;
         }
