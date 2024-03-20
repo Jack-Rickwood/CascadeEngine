@@ -5,9 +5,9 @@ NOTE: The label of 'engine' is mostly aspirational as of now. It is not set up t
 
 ## Showcase
 Sand will form piles like so:
-![Sand1](images/v0.1/Cascade_Water1.png)
-![Sand2](images/v0.1/Cascade_Water2.png)
-![Sand3](images/v0.1/Cascade_Water3.png)
+![Sand1](images/v0.1/Cascade_Sand1.png)
+![Sand2](images/v0.1/Cascade_Sand2.png)
+![Sand3](images/v0.1/Cascade_Sand3.png)
 
 Water is still a work in progress. Right now it's spread is too slow, causing water levels to equalize slower than feels natural.
 ![Water1](images/v0.1/Cascade_Water1.png)
