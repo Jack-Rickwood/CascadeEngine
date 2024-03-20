@@ -14,16 +14,16 @@
 #include "files/state_file.h"
 #include "log/log.h"
 
-#define CONFIG_GUI
+// #define CONFIG_GUI
 
 namespace cscd {
 
 class Application {
 public:
 #ifdef CONFIG_GUI
-    static constexpr bool create_debug_window = true;
+    static constexpr bool create_config_window = true;
 #else
-    static constexpr bool create_debug_window = false;
+    static constexpr bool create_config_window = false;
 #endif
 
     static constexpr int GAME_WIDTH = 1920;

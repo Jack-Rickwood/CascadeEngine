@@ -31,7 +31,7 @@ namespace generation {
             }
         }
 
-        /*
+        
         for (int x = 0; x < x_size; x++) {
             for (int z = 0; z < z_size; z++) {
                 float terrain_ratio = (1.0f / 2.0f);
@@ -42,6 +42,24 @@ namespace generation {
                     int grid_index = z * x_size * y_size + y * x_size + x;
                     if (y < (2 + y_size / 2)) {
                         grid[grid_index] = (uint8_t)cscd::physics::ParticleType::WATER;
+                    } else {
+                        grid[grid_index] = (uint8_t)cscd::physics::ParticleType::AIR;
+                    }
+                }
+            }
+        }
+        
+       /*
+        for (int x = (2 * x_size/5); x < (3 * x_size/5); x++) {
+            for (int z = (2 * z_size/5); z < (3 * z_size/5); z++) {
+                float terrain_ratio = (1.0f / 2.0f);
+                int terrain_min = (terrain_ratio / 2.0f) * y_size;
+                int terrain_max = (1.0f - (terrain_ratio / 2.0f)) * y_size;
+                int height = mapNoiseToHeight(noise.GetNoise<float>(x, z), terrain_min, terrain_max);
+                for (int y = y_size/2; y < y_size; y++) {
+                    int grid_index = z * x_size * y_size + y * x_size + x;
+                    if (y < y_size) {
+                        grid[grid_index] = (uint8_t)cscd::physics::ParticleType::SAND;
                     } else {
                         grid[grid_index] = (uint8_t)cscd::physics::ParticleType::AIR;
                     }

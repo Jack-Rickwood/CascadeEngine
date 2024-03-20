@@ -34,5 +34,6 @@
 # Project Specific
 build/
 src/externals/
+state.ccst
 *.d
 *.spv

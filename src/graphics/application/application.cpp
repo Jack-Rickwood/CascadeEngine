@@ -21,9 +21,12 @@ Application::~Application() {}
 void Application::run() {
     KeyboardInputController camera_controller{};
 
-    std::thread config_thread([this]() {
-        configWindow();
-    });
+    std::thread config_thread;
+    if (create_config_window) {
+        config_thread = std::thread([this]() {
+            configWindow();
+        });
+    }
 
     int frame_num = 0;
     float cum_frame_time = 0;
@@ -55,8 +58,10 @@ void Application::run() {
     }
 
     vkDeviceWaitIdle(device.device());
-    //stop_config_ui = true;
-    config_thread.join();
+    if (create_config_window) {
+        stop_config_ui = true;
+        config_thread.join();
+    }
 }
 
 }
