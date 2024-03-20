@@ -1,7 +1,7 @@
 # CascadeEngine
 A WIP fully raytraced voxel game engine, with a focus on fast, dynamic worlds. Written from scratch in Vulkan.
 
-__IMPORTANT__: Latest work is on the raytracer-perf branch
+__IMPORTANT: Latest work is on the raytracer-perf branch__
 
 NOTE: The label of 'engine' is mostly aspirational as of now. It is not set up to be easily extensible, or really function like an engine should. Once the main features are there, i'd like to start moving in that direction.
 
