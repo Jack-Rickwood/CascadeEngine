@@ -6,13 +6,13 @@ NOTE: The label of 'engine' is mostly aspirational as of now. It is not set up t
 ## Showcase
 Every voxel in the game world is updated each frame according to simple rules. Since this can involve updating 100s of billions of voxels per second, it is done in parallel on the GPU using a compute shader. Here is some of the behaviour that emerges.
 
+Water is still a work in progress. Right now it's spread is too slow, causing water levels to equalize slower than feels natural.
+![Water1](images/v0.1/Cascade_Water1.png)
+
 Dropped sand settles into piles.
 ![Sand1](images/v0.1/Cascade_Sand1.png)
 ![Sand2](images/v0.1/Cascade_Sand2.png)
 ![Sand3](images/v0.1/Cascade_Sand3.png)
-
-Water is still a work in progress. Right now it's spread is too slow, causing water levels to equalize slower than feels natural.
-![Water1](images/v0.1/Cascade_Water1.png)
 
 ## Documentation
 
