@@ -61,9 +61,10 @@ void Application::numberBoxUpdate(tgui::EditBox::Ptr& editbox, int& number_setti
 }
 
 void Application::configWindow() {
-    sf::RenderWindow config_window(sf::VideoMode(800, 600), "SFML works!");
-    config_window.setPosition(sf::Vector2i(1000, 200));
+    sf::RenderWindow config_window(sf::VideoMode(CONFIG_WIDTH, CONFIG_HEIGHT), "SFML works!");
+    config_window.setPosition(sf::Vector2i(2000, 200));
     tgui::Gui config_gui(config_window);
+    config_gui.setRelativeView({0, 0, 0.75f, 0.75f});
     tgui::Theme::setDefault("/usr/share/tgui-1/themes/Black.txt");
     
     config_gui.loadWidgetsFromFile("../src/gui/config/form.txt");

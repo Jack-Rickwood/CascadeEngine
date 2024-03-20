@@ -70,6 +70,7 @@ private:
     void createSamplers();
     void createStateBuffer();
     void uploadState();
+    void readState(std::vector<glm::vec3> voxels, std::vector<uint8_t> *data);
     void createStateDescriptors();
     void createSubchunkStateBuffer();
     void zeroSubchunkState();

@@ -74,5 +74,7 @@
         "any": "cpp",
         "codecvt": "cpp",
         "regex": "cpp"
-    }
+    },
+    "C_Cpp.default.cppStandard": "c++17",
+    "glsllint.glslangValidatorArgs": "-V -o /tmp/tmp.spv"
 }

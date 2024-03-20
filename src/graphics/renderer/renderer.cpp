@@ -79,7 +79,7 @@ void Renderer::createStateBuffer() {
     VkBufferCreateInfo buffer_create_info{};
     buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buffer_create_info.size = world_state.getSize();
-    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
     VmaAllocationCreateInfo allocation_info{};
     allocation_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -152,6 +152,22 @@ void Renderer::uploadState() {
     copyBuffer(staging_buffer, state_buffer, world_state.getSize());
 
     vmaDestroyBuffer(device.allocator(), staging_buffer, staging_allocation);
+}
+
+void Renderer::readState(std::vector<glm::vec3> voxels, std::vector<uint8_t> *data) {
+    void* mappedData;
+    vmaMapMemory(device.allocator(), state_allocation, &mappedData);
+
+    for (int i = 0; i < voxels.size(); i++) {
+        glm::vec3 voxel = voxels[i];
+        int x = voxel.x;
+        int y = voxel.y;
+        int z = voxel.z;
+        int index = z * scene_info.world_dimensions.y * scene_info.world_dimensions.x + y * scene_info.world_dimensions.x + x;
+        data->push_back(((uint8_t*)mappedData)[index]);
+    }
+
+    vmaUnmapMemory(device.allocator(), state_allocation);
 }
 
 void Renderer::copyBuffer(VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
@@ -698,8 +714,8 @@ void Renderer::render() {
     vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, graphics_pipeline->getPipelineLayout(), 0, graphics_descriptor_sets.size(), graphics_descriptor_sets.data(), 0, nullptr);
 
     vkCmdPushConstants(command_buffer, graphics_pipeline->getPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(RaytraceSettingsPushConstant), &render_settings);
-    group_count_x = (swap_chain->width() / 32) + 1;
-    group_count_y = (swap_chain->height() / 32) + 1;
+    group_count_x = (swap_chain->width() / 16) + 1;
+    group_count_y = (swap_chain->height() / 16) + 1;
     group_count_z = 1;
     vkCmdDispatch(command_buffer, group_count_x, group_count_y, group_count_z);
     vkCmdPipelineBarrier2(command_buffer, &dep_info);

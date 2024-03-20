@@ -18,6 +18,8 @@ struct SceneInfo {
 
     alignas(4) int chunk_size = 16;
     alignas(4) int local_size = 8;
+
+    alignas(4) int spectator_mode = true; // int to avoid weird alignment issues
 };
 
 struct RendererSettings {
@@ -26,11 +28,11 @@ struct RendererSettings {
 
 struct RaytraceSettingsPushConstant {
     int frame_num = 0;
-    alignas(4) int max_ray_steps = 128;
-    alignas(4) int max_bounces = 3;
-    alignas(4) int rays_per_pixel = 4;
+    alignas(4) int max_ray_steps = 512;
+    alignas(4) int max_bounces = 2;
+    alignas(4) int rays_per_pixel = 1;
     alignas(4) int use_blue_noise = true; // int to avoid weird alignment issues
-    alignas(4) int use_temp_accumulation = false; // int to avoid weird alignment issues
+    alignas(4) int use_temp_accumulation = true; // int to avoid weird alignment issues
     alignas(4) int invalidate_accumulation = false; // int to avoid weird alignment issues
 };
 

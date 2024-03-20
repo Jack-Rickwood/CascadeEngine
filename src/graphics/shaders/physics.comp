@@ -25,6 +25,8 @@ layout (binding = 0, set = 1) uniform SceneInfoUBO {
 
     int chunk_size;
     int local_size;
+
+    int spectator_mode;
 } scene_info;
 
 layout (scalar, binding = 0, set = 2) buffer subchunkStateBuffer

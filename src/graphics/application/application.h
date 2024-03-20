@@ -26,8 +26,10 @@ public:
     static constexpr bool create_debug_window = false;
 #endif
 
-    static constexpr int WIDTH = 800;
-    static constexpr int HEIGHT = 600;
+    static constexpr int GAME_WIDTH = 1920;
+    static constexpr int GAME_HEIGHT = 1200;
+    static constexpr int CONFIG_WIDTH = 750;
+    static constexpr int CONFIG_HEIGHT = 1000;
 
     Application() = delete;
     Application(std::string state_path);
@@ -52,7 +54,7 @@ public:
 private:
     SceneInfo scene_info{};
     
-    Window window{WIDTH, HEIGHT, "Hello Vulkan!"};
+    Window window{GAME_WIDTH, GAME_HEIGHT, "Hello Vulkan!"};
     Device device{window};
     Renderer renderer;
     Logger logger;

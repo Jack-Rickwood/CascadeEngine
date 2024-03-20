@@ -4,9 +4,11 @@
 namespace cscd {
 
 void KeyboardInputController::update(GLFWwindow* window, float dt, SceneInfo& scene_info) {
+    // Backup old camera position and direction
     scene_info.old_camera_direction = scene_info.camera_direction;
     scene_info.old_camera_position = scene_info.camera_position;
 
+    // Handle looking around
     glm::vec2 look{
         atan2(scene_info.camera_direction.z, scene_info.camera_direction.x),
         asin(scene_info.camera_direction.y)
@@ -28,6 +30,7 @@ void KeyboardInputController::update(GLFWwindow* window, float dt, SceneInfo& sc
     scene_info.camera_direction = glm::normalize(scene_info.camera_direction);
     //printf("x: %f\ty: %f\tz: %f\n", scene_info.camera_direction.x, scene_info.camera_direction.y, scene_info.camera_direction.z);
 
+    // Handle moving
     float move_amount = 1.0f * settings.move_speed * dt;
     glm::vec3 camera_direction_plane = glm::normalize(scene_info.camera_direction * glm::vec3(1.0f, 0.0f, 1.0f));
     glm::mat3x3 rot_x = glm::mat3x3(1.0f, 0.0f, 0.0f, 0.0f, cos(glm::half_pi<float>()), -sin(glm::half_pi<float>()), 0.0f, sin(glm::half_pi<float>()), cos(glm::half_pi<float>()));

@@ -24,7 +24,9 @@ void Application::run() {
     std::thread config_thread([this]() {
         configWindow();
     });
-    
+
+    int frame_num = 0;
+    float cum_frame_time = 0;
     auto curr_time = std::chrono::high_resolution_clock::now();
     while (!window.shouldClose()) {
         glfwPollEvents();
@@ -32,7 +34,12 @@ void Application::run() {
         auto new_time = std::chrono::high_resolution_clock::now();
         float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(new_time - curr_time).count();
         curr_time = new_time;
-        std::cout << std::to_string(1.0f / frame_time) << std::endl;
+        cum_frame_time += frame_time;
+
+        if (frame_num % 60 == 0) {
+            std::cout << std::to_string(1.0f / (cum_frame_time / 60.0f)) << std::endl;
+            cum_frame_time = 0;
+        }
 
         camera_controller.update(window.getGLFWWindow(), frame_time, scene_info);
 
@@ -43,6 +50,8 @@ void Application::run() {
             renderer.render();
             renderer.endFrame();
         }
+
+        frame_num++;
     }
 
     vkDeviceWaitIdle(device.device());
