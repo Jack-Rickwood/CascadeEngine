@@ -4,9 +4,13 @@ A WIP fully raytraced voxel game engine, with a focus on fast, dynamic worlds. W
 NOTE: The label of 'engine' is mostly aspirational as of now. It is not set up to be easily extensible, or really function like an engine should. Once the main features are there, i'd like to start moving in that direction.
 
 ## Showcase
+Sand will form piles like so:
+![Sand1](images/v0.1/Cascade_Water1.png)
+![Sand2](images/v0.1/Cascade_Water2.png)
+![Sand3](images/v0.1/Cascade_Water3.png)
 
-Preliminary water implementation:
-![Water](images/v0.1/Cascade_Water1.png)
+Water is still a work in progress. Right now it's spread is too slow, causing water levels to equalize slower than feels natural.
+![Water1](images/v0.1/Cascade_Water1.png)
 
 ## Documentation
 
