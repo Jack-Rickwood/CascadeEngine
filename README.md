@@ -4,9 +4,9 @@ A WIP fully raytraced voxel game engine, with a focus on fast, dynamic worlds. W
 NOTE: The label of 'engine' is mostly aspirational as of now. It is not set up to be easily extensible, or really function like an engine should. Once the main features are there, i'd like to start moving in that direction.
 
 ## Showcase
-Every voxel in the game world is updated every frame. Since this can involve updating 100s of billions of voxels per second, it is done in parallel using a compute shader.
+Every voxel in the game world is updated each frame according to simple rules. Since this can involve updating 100s of billions of voxels per second, it is done in parallel on the GPU using a compute shader. Here is some of the behaviour that emerges.
 
-Here is some of the behaviour in action, dropped sand settles into piles:
+Dropped sand settles into piles.
 ![Sand1](images/v0.1/Cascade_Sand1.png)
 ![Sand2](images/v0.1/Cascade_Sand2.png)
 ![Sand3](images/v0.1/Cascade_Sand3.png)
