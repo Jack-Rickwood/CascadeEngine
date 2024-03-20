@@ -6,7 +6,7 @@ NOTE: The label of 'engine' is mostly aspirational as of now. It is not set up t
 ## Showcase
 
 Preliminary water implementation:
-![Water](images/v0.1/Cascade_Water.png)
+![Water](images/v0.1/Cascade_Water1.png)
 
 ## Documentation
 
