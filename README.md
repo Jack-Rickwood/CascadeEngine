@@ -1,3 +1,7 @@
+# Note: Code is outdated
+Latest changes are local (pending cleanup and port from cuda to gpu agnostic libraries). Progress:
+![Latest](images/v2.png)
+
 # CascadeEngine
 A WIP fully raytraced voxel game engine, with a focus on fast, dynamic worlds. Written from scratch in Vulkan.
 
