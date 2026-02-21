@@ -1,4 +1,4 @@
-# Note: Code is outdated
+### Note: Rewrite in progress
 Latest changes are local (pending cleanup and port from cuda to gpu agnostic libraries). Progress:
 ![Latest](images/v2.png)
 
